@@ -19,6 +19,7 @@ public struct EKAttributes {
      */
     public var name: String?
     
+    public var id: Int? = nil
     // MARK: Display Attributes
     
     /** Entry presentation window level */
@@ -77,7 +78,7 @@ public struct EKAttributes {
     public var border = Border.none
     
     /** Preferred status bar style while the entry shows */
-    public var statusBar = StatusBar.inferred
+//    public var statusBar = StatusBar.inferred
     
     // MARK: Animation Attributes
     

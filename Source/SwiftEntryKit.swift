@@ -242,6 +242,13 @@ public final class SwiftEntryKit {
         }
     }
     
+    public func dismiss(by id: Int,
+                        with completion: DismissCompletionHandler? = nil) {
+        DispatchQueue.main.async {
+            self.windowProvider.dismiss(by: id, with: completion)
+        }
+    }
+    
     /**
      Dismisses the currently presented entry and removes the presented window instance after the exit animation is concluded.
      - A thread-safe method - Can be invoked from any thread.
@@ -251,6 +258,11 @@ public final class SwiftEntryKit {
      */
     public class func dismiss(_ descriptor: EntryDismissalDescriptor = .displayed, with completion: DismissCompletionHandler? = nil) {
         shared.dismiss(descriptor, with: completion)
+    }
+    
+    public class func dismiss(by id: Int,
+                              with completion: DismissCompletionHandler? = nil) {
+        shared.dismiss(by: id, with: completion)
     }
 
     /**

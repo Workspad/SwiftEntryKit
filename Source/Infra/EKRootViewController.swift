@@ -17,6 +17,7 @@ protocol EntryPresenterDelegate: AnyObject {
 class EKRootViewController: UIViewController {
     
     // MARK: - Props
+    var currentTheme = EKAttributes.DisplayMode.inferred
     
     private unowned let delegate: EntryPresenterDelegate
     
@@ -71,29 +72,45 @@ class EKRootViewController: UIViewController {
     }
     
     // Previous status bar style
-    private let previousStatusBar: EKAttributes.StatusBar
-    
-    private var statusBar: EKAttributes.StatusBar? = nil {
-        didSet {
-            if let statusBar = statusBar, ![statusBar, oldValue].contains(.ignored) {
-                UIApplication.shared.set(statusBarStyle: statusBar)
-            }
-        }
-    }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        if [previousStatusBar, statusBar].contains(.ignored) {
-            return super.preferredStatusBarStyle
+        if #available(iOS 13.0, *) {
+            switch currentTheme {
+            case .inferred:
+                return .default
+            case .light:
+                return .darkContent
+            case .dark:
+                return .lightContent
+            }
+        } else {
+            return .default
         }
-        return statusBar?.appearance.style ?? previousStatusBar.appearance.style
     }
+    
+//    private let previousStatusBar: EKAttributes.StatusBar
+    
+//    private var statusBar: EKAttributes.StatusBar? = nil {
+//        didSet {
+//            if let statusBar = statusBar, ![statusBar, oldValue].contains(.ignored) {
+//                UIApplication.shared.set(statusBarStyle: statusBar)
+//            }
+//        }
+//    }
+    
+//    override var preferredStatusBarStyle: UIStatusBarStyle {
+//        if [previousStatusBar, statusBar].contains(.ignored) {
+//            return super.preferredStatusBarStyle
+//        }
+//        return statusBar?.appearance.style ?? previousStatusBar.appearance.style
+//    }
 
-    override var prefersStatusBarHidden: Bool {
-        if [previousStatusBar, statusBar].contains(.ignored) {
-            return super.prefersStatusBarHidden
-        }
-        return !(statusBar?.appearance.visible ?? previousStatusBar.appearance.visible)
-    }
+//    override var prefersStatusBarHidden: Bool {
+//        if [previousStatusBar, statusBar].contains(.ignored) {
+//            return super.prefersStatusBarHidden
+//        }
+//        return !(statusBar?.appearance.visible ?? previousStatusBar.appearance.visible)
+//    }
     
     // MARK: - Lifecycle
     
@@ -103,7 +120,7 @@ class EKRootViewController: UIViewController {
     
     public init(with delegate: EntryPresenterDelegate) {
         self.delegate = delegate
-        previousStatusBar = .currentStatusBar
+//        previousStatusBar = .currentStatusBar
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -114,15 +131,15 @@ class EKRootViewController: UIViewController {
         backgroundView.fillSuperview()
     }
     
-    override public func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        statusBar = previousStatusBar
-    }
+//    override public func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//        statusBar = previousStatusBar
+//    }
     
     // Set status bar
-    func setStatusBarStyle(for attributes: EKAttributes) {
-        statusBar = attributes.statusBar
-    }
+//    func setStatusBarStyle(for attributes: EKAttributes) {
+//        statusBar = attributes.statusBar
+//    }
     
     // MARK: - Setup
     
@@ -137,10 +154,10 @@ class EKRootViewController: UIViewController {
         let attributes = entryView.attributes
         
         // Assign attributes
-        let previousAttributes = lastAttributes
+//        let previousAttributes = lastAttributes
         
         // Remove the last entry
-        removeLastEntry(lastAttributes: previousAttributes, keepWindow: true)
+        // removeLastEntry(lastAttributes: previousAttributes, keepWindow: true)
         
         lastAttributes = attributes
         
@@ -155,9 +172,9 @@ class EKRootViewController: UIViewController {
             isResponsive = true
         }
 
-        if previousAttributes?.statusBar != attributes.statusBar {
-            setNeedsStatusBarAppearanceUpdate()
-        }
+//        if previousAttributes?.statusBar != attributes.statusBar {
+//            setNeedsStatusBarAppearanceUpdate()
+//        }
         
         if shouldAutorotate {
             UIViewController.attemptRotationToDeviceOrientation()
@@ -190,6 +207,12 @@ class EKRootViewController: UIViewController {
         lastEntry?.animateOut(pushOut: false)
     }
     
+    func animateOutEntry(by id: Int, completionHandler: SwiftEntryKit.DismissCompletionHandler? = nil) {
+        guard let entry = self.view.viewWithTag(id)?.superview as? EKContentView else { return }
+        entry.dismissHandler = completionHandler
+        entry.animateOut(pushOut: false)
+    }
+
     // Pops last entry (using pop animation) - animatedly
     func popLastEntry() {
         lastEntry?.animateOut(pushOut: true)
@@ -269,4 +292,3 @@ extension EKRootViewController: EntryContentViewDelegate {
         }
     }
 }
-
